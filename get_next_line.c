@@ -6,7 +6,7 @@
 /*   By: ariling <ariling@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/06 05:14:05 by ariling           #+#    #+#             */
-/*   Updated: 2024/06/06 05:42:16 by ariling          ###   ########.fr       */
+/*   Updated: 2024/06/07 16:21:25 by ariling          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,101 +15,106 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static size_t	find_next_line_break(char *str, size_t i)
+// Find the position of the next line break in the string
+static size_t	locate_next_line(char *buffer, size_t start)
 {
-	char	*ptr;
+	char	*cursor;
 
-	ptr = str + i;
-	while (*ptr && *ptr != '\n')
-		ptr++;
-	if (*ptr == '\n')
-		ptr++;
-	return (ptr - str);
+	cursor = buffer + start;
+	while (*cursor && *cursor != '\n')
+		cursor++;
+	if (*cursor == '\n')
+		cursor++;
+	return (cursor - buffer);
 }
 
-static char	*create_substring(char *str)
+// Create a new substring starting after the first newline character
+static char	*extract_remainder(char *buffer)
 {
-	char	*new_str;
-	size_t	i;
-	size_t	j;
+	char	*new_buffer;
+	size_t	start;
+	size_t	index;
 
-	i = 0;
-	j = 0;
-	if (!*str)
-		return (free(str), NULL);
-	i = find_next_line_break(str, i);
-	new_str = (char *)malloc((ft_strlen(str) - i) + 1);
-	if (!new_str)
-		return (free(new_str), NULL);
-	while (*(str + i))
-		*(new_str + j++) = *(str + i++);
-	*(new_str + j) = '\0';
-	if (!*new_str)
-		return (free(str), free(new_str), NULL);
-	free(str);
-	return (new_str);
+	start = 0;
+	index = 0;
+	if (!*buffer)
+		return (free(buffer), NULL);
+	start = locate_next_line(buffer, start);
+	new_buffer = (char *)malloc((ft_strlen(buffer) - start) + 1);
+	if (!new_buffer)
+		return (free(new_buffer), NULL);
+	while (*(buffer + start))
+		*(new_buffer + index++) = *(buffer + start++);
+	*(new_buffer + index) = '\0';
+	if (!*new_buffer)
+		return (free(buffer), free(new_buffer), NULL);
+	free(buffer);
+	return (new_buffer);
 }
 
-static char	*read_line(char *str)
+// Read a single line from the buffer
+static char	*extract_line(char *buffer)
 {
 	char	*line;
-	size_t	i;
+	size_t	index;
 
-	i = 0;
-	if (!str || *str == '\0')
+	index = 0;
+	if (!buffer || *buffer == '\0')
 		return (NULL);
-	i = find_next_line_break(str, i);
-	line = (char *)malloc(sizeof(char) * i + 1);
+	index = locate_next_line(buffer, index);
+	line = (char *)malloc(sizeof(char) * index + 1);
 	if (!line)
 		return (NULL);
-	i = 0;
-	while (*(str + i) && *(str + i) != '\n')
+	index = 0;
+	while (*(buffer + index) && *(buffer + index) != '\n')
 	{
-		*(line + i) = *(str + i);
-		i++;
+		*(line + index) = *(buffer + index);
+		index++;
 	}
-	if (*(str + i) == '\n')
+	if (*(buffer + index) == '\n')
 	{
-		*(line + i) = *(str + i);
-		i++;
+		*(line + index) = *(buffer + index);
+		index++;
 	}
-	*(line + i) = '\0';
+	*(line + index) = '\0';
 	return (line);
 }
 
-static char	*free_and_null(char *buff1, char *buff2)
+// Free two buffers and set the second to NULL
+static char	*cleanup_buffers(char *buffer1, char *buffer2)
 {
-	free(buff1);
-	free(buff2);
-	buff2 = NULL;
-	return (buff2);
+	free(buffer1);
+	free(buffer2);
+	buffer2 = NULL;
+	return (buffer2);
 }
 
+// Main function to get the next line from the file descriptor `fd`
 char	*get_next_line(int fd)
 {
-	char		*read_content;
-	int			read_bytes;
-	static char	*read_buffer;
+	char		*read_buf;
+	int			bytes_read;
+	static char	*static_buf;
 
-	read_bytes = 1;
+	bytes_read = 1;
 	if (fd < 0 || BUFFER_SIZE <= 0 || BUFFER_SIZE > INT_MAX)
 		return (NULL);
-	read_content = (char *)malloc(sizeof(char) * BUFFER_SIZE + 1);
-	if (!read_content)
+	read_buf = (char *)malloc(sizeof(char) * BUFFER_SIZE + 1);
+	if (!read_buf)
 		return (NULL);
-	while (!(ft_strchr(read_buffer, '\n')) && read_bytes != 0)
+	while (!(ft_strchr(static_buf, '\n')) && bytes_read != 0)
 	{
-		read_bytes = read(fd, read_content, BUFFER_SIZE);
-		if (read_bytes == -1)
+		bytes_read = read(fd, read_buf, BUFFER_SIZE);
+		if (bytes_read == -1)
 		{
-			read_buffer = free_and_null(read_content, read_buffer);
+			static_buf = cleanup_buffers(read_buf, static_buf);
 			return (NULL);
 		}
-		*(read_content + read_bytes) = '\0';
-		read_buffer = ft_strjoin(read_buffer, read_content);
+		*(read_buf + bytes_read) = '\0';
+		static_buf = ft_strjoin(static_buf, read_buf);
 	}
-	free(read_content);
-	read_content = read_line(read_buffer);
-	read_buffer = create_substring(read_buffer);
-	return (read_content);
+	free(read_buf);
+	read_buf = extract_line(static_buf);
+	static_buf = extract_remainder(static_buf);
+	return (read_buf);
 }
