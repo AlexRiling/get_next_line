@@ -6,7 +6,7 @@
 /*   By: ariling <ariling@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/06 05:14:05 by ariling           #+#    #+#             */
-/*   Updated: 2024/06/07 16:21:25 by ariling          ###   ########.fr       */
+/*   Updated: 2024/06/07 16:27:58 by ariling          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-// Find the position of the next line break in the string
 static size_t	locate_next_line(char *buffer, size_t start)
 {
 	char	*cursor;
@@ -28,7 +27,6 @@ static size_t	locate_next_line(char *buffer, size_t start)
 	return (cursor - buffer);
 }
 
-// Create a new substring starting after the first newline character
 static char	*extract_remainder(char *buffer)
 {
 	char	*new_buffer;
@@ -52,7 +50,6 @@ static char	*extract_remainder(char *buffer)
 	return (new_buffer);
 }
 
-// Read a single line from the buffer
 static char	*extract_line(char *buffer)
 {
 	char	*line;
@@ -80,7 +77,6 @@ static char	*extract_line(char *buffer)
 	return (line);
 }
 
-// Free two buffers and set the second to NULL
 static char	*cleanup_buffers(char *buffer1, char *buffer2)
 {
 	free(buffer1);
@@ -89,7 +85,6 @@ static char	*cleanup_buffers(char *buffer1, char *buffer2)
 	return (buffer2);
 }
 
-// Main function to get the next line from the file descriptor `fd`
 char	*get_next_line(int fd)
 {
 	char		*read_buf;
