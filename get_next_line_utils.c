@@ -6,73 +6,36 @@
 /*   By: ariling <ariling@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/06 02:25:10 by ariling           #+#    #+#             */
-/*   Updated: 2024/06/06 02:27:11 by ariling          ###   ########.fr       */
+/*   Updated: 2024/06/06 05:42:37 by ariling          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-char	*ft_strchr(const char *s, int c)
+size_t	ft_strlen(char const *str)
 {
-	while (*s)
-	{
-		if (*s == (char)c)
-			return ((char *)s);
-		s++;
-	}
-	if ((char)c == '\0')
-		return ((char *)s);
-	return (NULL);
-}
-
-size_t	ft_strlen(const char *s)
-{
-	size_t	length;
-
-	length = 0;
-	while (s[length])
-		length++;
-	return (length);
-}
-
-char	*ft_strdup(const char *s1)
-{
-	char	*dup;
 	size_t	i;
-	size_t	len;
 
-	len = 0;
-	while (s1[len])
-		len++;
-	dup = (char *)malloc((len + 1) * sizeof(char));
-	if (!dup)
-		return (NULL);
 	i = 0;
-	while (i < len)
-	{
-		dup[i] = s1[i];
+	while (*(str + i))
 		i++;
-	}
-	dup[i] = '\0';
-	return (dup);
+	return (i);
 }
 
-char	*ft_strjoin(char const *s1, char const *s2)
+char	*ft_strchr(char const *str, int c)
 {
-	char	*new_str;
-	size_t	len1;
-	size_t	len2;
-
-	if (!s1 || !s2)
+	if (!str)
 		return (NULL);
-	len1 = ft_strlen(s1);
-	len2 = ft_strlen(s2);
-	new_str = (char *)malloc(sizeof(char) * (len1 + len2 + 1));
-	if (!new_str)
+	while (*str)
+	{
+		if (*str == (char)c)
+			return ((char *)str);
+		str++;
+	}
+	if (*str == (char)c)
+		return ((char *)str);
+	else
 		return (NULL);
-	ft_strlcpy(new_str, s1, len1 + 1);
-	ft_strlcat(new_str, s2, len1 + len2 + 1);
-	return (new_str);
 }
 
 char	*ft_strcpy(char *dest, const char *src)
@@ -84,4 +47,45 @@ char	*ft_strcpy(char *dest, const char *src)
 		*dest++ = *src++;
 	*dest = '\0';
 	return (dest_start);
+}
+
+char	*ft_strdup(const char *src)
+{
+	size_t	len;
+	char	*dest;
+
+	len = ft_strlen(src);
+	dest = (char *)malloc(sizeof(char) * (len + 1));
+	if (!dest)
+		return (NULL);
+	return (ft_strcpy(dest, src));
+}
+
+char	*ft_strjoin(char *buffer, const char *content)
+{
+	size_t	buffer_len;
+	size_t	content_len;
+	char	*result;
+	char	*result_ptr;
+	char	*src;
+
+	buffer_len = 0;
+	if (!buffer && !content)
+		return (NULL);
+	if (buffer)
+		buffer_len = ft_strlen(buffer);
+	content_len = ft_strlen(content);
+	result = (char *)malloc(sizeof(char) * (buffer_len + content_len + 1));
+	if (!result)
+		return (NULL);
+	result_ptr = result;
+	src = buffer;
+	while (src && *src)
+		*result_ptr++ = *src++;
+	src = (char *)content;
+	while (src && *src)
+		*result_ptr++ = *src++;
+	*result_ptr = '\0';
+	free(buffer);
+	return (result);
 }
